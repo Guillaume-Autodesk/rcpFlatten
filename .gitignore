@@ -1,0 +1,41 @@
+# Build / output trees
+/build/
+/out/
+/Dist/
+
+# .NET
+bin/
+obj/
+
+# Visual Studio / MSBuild
+/.vs/
+*.user
+*.suo
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+*.aps
+
+# Build outputs that may end up alongside the binaries during local testing
+*.exe
+*.dll
+*.lib
+*.obj
+*.pdb
+*.ilk
+*.iobj
+*.ipdb
+*.exp
+*.idb
+*.tlog
+
+# AutoCAD crash reports (may contain user and machine information)
+/ErrorReports/
+
+# Point cloud data and test files
+*.rcp
+*.rcs
+*.e57
+*.las
+*.laz

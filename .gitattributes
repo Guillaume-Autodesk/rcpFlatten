@@ -1,0 +1,33 @@
+# Auto-detect text files and normalise line endings on commit (LF in repo).
+* text=auto eol=lf
+
+# Files that are platform-specific should keep their native line endings.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# Source files: LF in repo, native on checkout.
+*.cpp   text eol=lf
+*.h     text eol=lf
+*.hpp   text eol=lf
+*.cs    text eol=lf
+*.csproj text eol=lf
+*.vcxproj text eol=lf
+*.cmake text eol=lf
+*.txt   text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+
+# Mark binary files explicitly so Git does not try to diff/normalise them.
+*.exe   binary
+*.dll   binary
+*.lib   binary
+*.obj   binary
+*.pdb   binary
+*.zip   binary
+*.7z    binary
+*.rcp   binary
+*.rcs   binary
+*.e57   binary

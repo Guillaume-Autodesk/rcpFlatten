@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" TreatAsLocalProperty="RECAP_SDK_ROOT" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7B1C3D52-5E0A-4B7E-9C1D-3A5F2E8B4C10}</ProjectGuid>
+    <RootNamespace>RcpFlattenCli</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <!-- ReCap SDK root (folder containing Include, Lib and Bin): set the RECAP_SDK_ROOT
+       environment variable or pass /p:RECAP_SDK_ROOT=... to MSBuild. -->
+  <PropertyGroup Condition="'$(RECAP_SDK_ROOT)' != ''">
+    <RECAP_SDK_ROOT>$([MSBuild]::EnsureTrailingSlash('$(RECAP_SDK_ROOT)'))</RECAP_SDK_ROOT>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <OutDir>$(MSBuildThisFileDirectory)..\build\cli\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\build\int\cli\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;GE_NO_ACAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(RECAP_SDK_ROOT)Include;$(RECAP_SDK_ROOT)Include\gelib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(RECAP_SDK_ROOT)Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>AdskRcData.lib;AdskRcProjectIO.lib;AdskRcCommon.lib;AdskRcFoundation.lib;AdskRcFilter.lib;AdskRcCompressUtils.lib;AdskRcFileSystemUtility.lib;AdskRcStringUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4099 /ignore:4098 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(RECAP_SDK_ROOT)Bin\*.dll" "$(OutDir)" /y /r /q
+xcopy "$(RECAP_SDK_ROOT)Bin\dependencies\*" "$(OutDir)" /y /r /q /s
+xcopy "$(RECAP_SDK_ROOT)Bin\plugins\*" "$(OutDir)plugins\" /y /r /q /s
+exit 0</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClInclude Include="PolylineProjector.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="CheckRecapSdk" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(RECAP_SDK_ROOT)' == '' Or !Exists('$(RECAP_SDK_ROOT)Include')" Text="ReCap SDK not found. Set the RECAP_SDK_ROOT environment variable (or pass /p:RECAP_SDK_ROOT=...) to the ReCap SDK folder that contains Include, Lib and Bin." />
+  </Target>
+</Project>

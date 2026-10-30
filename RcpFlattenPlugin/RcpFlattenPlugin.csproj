@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="AutoCadDir">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>RcpFlatten</AssemblyName>
+    <RootNamespace>RcpFlatten</RootNamespace>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <NoWarn>$(NoWarn);MSB3277</NoWarn>
+    <!-- Override with the AutoCadDir environment variable or /p:AutoCadDir=... -->
+    <AutoCadDir Condition="'$(AutoCadDir)' == ''">C:\Program Files\Autodesk\AutoCAD 2027\</AutoCadDir>
+    <AutoCadDir>$([MSBuild]::EnsureTrailingSlash('$(AutoCadDir)'))</AutoCadDir>
+    <CliOutputDir>$(MSBuildThisFileDirectory)..\build\cli\</CliOutputDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="accoremgd">
+      <HintPath>$(AutoCadDir)accoremgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="acdbmgd">
+      <HintPath>$(AutoCadDir)acdbmgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- The native helper (ReCap SDK) runs out of process, next to the plug-in -->
+  <ItemGroup>
+    <CliFiles Include="$(CliOutputDir)**\*" Exclude="$(CliOutputDir)**\*.pdb;$(CliOutputDir)**\*.lib;$(CliOutputDir)**\*.exp;$(CliOutputDir)**\*.ilk" />
+  </ItemGroup>
+
+  <Target Name="CopyCli" AfterTargets="Build">
+    <Copy SourceFiles="@(CliFiles)" DestinationFiles="@(CliFiles->'$(OutDir)cli\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
+
