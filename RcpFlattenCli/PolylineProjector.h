@@ -9,6 +9,20 @@
 // Projects points onto a 2D polyline (lines and bulge arcs) and returns the
 // station (distance along the polyline) and the signed lateral offset
 // (positive on the left of the drawing direction).
+//
+// Each point is assigned to the segment whose region contains it. The regions
+// are delimited at every vertex by the bisector (miter line) of the angle, so
+// the plane is partitioned without gaps. Inside its region a point is projected
+// on the supporting line (or circle) of its segment WITHOUT clamping, which
+// gives the exact lateral offset and avoids piling the points of a corner up on
+// the vertex.
+//
+// The station of a point is its position along its segment, rescaled linearly
+// between the two bisector lines so that the bisector line of every vertex maps
+// exactly on the station of that vertex.
+// The station is therefore continuous across the corners (no gap, no overlap)
+// and never drifts away from the station along the polyline: the correction is
+// local to each segment and is not accumulated from one corner to the next.
 class PolylineProjector
 {
 public:
@@ -85,33 +99,52 @@ public:
         }
     }
 
-    // Returns false if the point is farther than maxDistance from every valid
-    // segment. Beyond the ends of an open polyline, points are rejected.
+    // Distance from the polyline within which a point can be kept when the
+    // lateral offset is at most maxDistance. It is larger than maxDistance on
+    // the outer side of a sharp corner, so use it to extend the bounding box.
+    double reach(double maxDistance) const { return maxDistance * mWedge; }
+
+    // Returns false if the point is farther than maxDistance (laterally) from
+    // the polyline. Beyond the ends of an open polyline, points are rejected.
     bool project(double px, double py, double maxDistance, Result& result) const
     {
-        double bestDist = maxDistance;
         bool found      = false;
+        bool anyRegion  = false;
+        double bestDist = maxDistance;
 
         for (const auto& s : mSegments)
         {
-            if (px < s.minX - maxDistance || px > s.maxX + maxDistance || py < s.minY - maxDistance || py > s.maxY + maxDistance)
+            const double margin = maxDistance * s.wedge;
+            if (px < s.minX - margin || px > s.maxX + margin || py < s.minY - margin || py > s.maxY + margin)
                 continue;
 
-            double dist, station, tx, ty, qx, qy;
-            if (!(s.isArc ? projectOnArc(s, px, py, dist, station, tx, ty, qx, qy) : projectOnLine(s, px, py, dist, station, tx, ty, qx, qy)))
+            double along, lateral;
+            if (!projectInRegion(s, px, py, along, lateral))
                 continue;
 
+            anyRegion = true;
+            const double dist = std::fabs(lateral);
             if (dist > bestDist)
                 continue;
 
-            // Left normal of the tangent is (-ty, tx)
-            const double side = (-ty) * (px - qx) + tx * (py - qy);
-            bestDist          = dist;
-            result.station    = station;
-            result.lateral    = side >= 0.0 ? dist : -dist;
-            found             = true;
+            // At this lateral offset the bisector lines cross the segment at
+            // lateral * tanStart and at length - lateral * tanEnd (tan = tan(turn / 2)).
+            // Map that interval linearly on the station range of the segment.
+            const double first = lateral * s.tanStart;
+            const double span  = s.length - lateral * (s.tanStart + s.tanEnd);
+            const double u     = span > 1e-9 * s.length ? (along - first) / span : along / s.length;
+            bestDist           = dist;
+            result.lateral     = lateral;
+            result.station     = s.cumStart + u * s.length;
+            found              = true;
         }
-        return found;
+
+        if (anyRegion)
+            return found;
+
+        // Not in the region of any segment (very short segments with a large
+        // search distance make the bisector regions overlap): nearest segment.
+        return projectNearest(px, py, maxDistance, result);
     }
 
 private:
@@ -126,18 +159,61 @@ private:
         // Arc data
         double cx, cy, radius, startAngle, sweep;
         double minX, minY, maxX, maxY;
+        // Tangents at the start and at the end of the segment
+        double t0x, t0y, t1x, t1y;
+        // Unit vectors normal to the bisector lines at the start and end
+        // vertices, pointing forward along the polyline
+        double sfx, sfy, efx, efy;
+        // tan(turn / 2) at the start and end vertices (0 at the ends of an open polyline)
+        double tanStart, tanEnd;
+        // 1 + largest |tan(turn / 2)| at the two ends: search margin factor
+        double wedge;
     };
 
-    static constexpr double Pi    = 3.14159265358979323846;
-    static constexpr double TwoPi = 2.0 * Pi;
+    static constexpr double Pi      = 3.14159265358979323846;
+    static constexpr double TwoPi   = 2.0 * Pi;
+    static constexpr double MaxTan  = 20.0;    // caps the effect of near U-turns
 
     std::vector<Segment> mSegments;
     double mLength = 0.0;
+    double mWedge  = 1.0;
 
     static double normalizeAngle(double a)
     {
         a = std::fmod(a, TwoPi);
         return a < 0.0 ? a + TwoPi : a;
+    }
+
+    // Wraps an angle into [-Pi, Pi)
+    static double wrapToPi(double a) { return a - TwoPi * std::floor((a + Pi) / TwoPi); }
+
+    // tan(turn / 2) between the end tangent of a segment and the start tangent of the next one
+    static double tanHalfTurn(double t1x, double t1y, double t2x, double t2y)
+    {
+        const double cross = t1x * t2y - t1y * t2x;
+        const double dot   = t1x * t2x + t1y * t2y;
+        const double denom = 1.0 + dot;
+        if (denom < 1e-9)
+            return 0.0;
+        return std::clamp(cross / denom, -MaxTan, MaxTan);
+    }
+
+    // Unit vector along the sum of two unit tangents (normal to the bisector line)
+    static void forwardVector(double t1x, double t1y, double t2x, double t2y, double& fx, double& fy)
+    {
+        const double sx = t1x + t2x;
+        const double sy = t1y + t2y;
+        const double n  = std::hypot(sx, sy);
+        if (n < 1e-9)
+        {
+            fx = t1x;
+            fy = t1y;
+        }
+        else
+        {
+            fx = sx / n;
+            fy = sy / n;
+        }
     }
 
     void build(const std::vector<Vertex>& v, bool closed)
@@ -172,6 +248,8 @@ private:
                 s.maxX   = std::max(a.x, b.x);
                 s.minY   = std::min(a.y, b.y);
                 s.maxY   = std::max(a.y, b.y);
+                s.t0x = s.t1x = dx / chord;
+                s.t0y = s.t1y = dy / chord;
             }
             else
             {
@@ -187,20 +265,141 @@ private:
                 s.maxX         = s.cx + s.radius;
                 s.minY         = s.cy - s.radius;
                 s.maxY         = s.cy + s.radius;
+
+                const double ccw = s.sweep > 0.0 ? 1.0 : -1.0;
+                const double end = s.startAngle + s.sweep;
+                s.t0x            = -ccw * std::sin(s.startAngle);
+                s.t0y            = ccw * std::cos(s.startAngle);
+                s.t1x            = -ccw * std::sin(end);
+                s.t1y            = ccw * std::cos(end);
             }
             cum += s.length;
             mSegments.push_back(s);
         }
 
         mLength = cum;
-        if (!mSegments.empty() && !closed)
+        if (mSegments.empty())
+            return;
+
+        // Bisector lines, corner angles and open ends
+        const size_t m = mSegments.size();
+        mWedge         = 1.0;
+        for (size_t k = 0; k < m; ++k)
         {
-            mSegments.front().openStart = true;
-            mSegments.back().openEnd    = true;
+            Segment& s         = mSegments[k];
+            const bool hasPrev = k > 0 || closed;
+            const bool hasNext = k + 1 < m || closed;
+            double tanStart    = 0.0;
+            double tanEnd      = 0.0;
+
+            if (hasPrev)
+            {
+                const Segment& p = mSegments[(k + m - 1) % m];
+                forwardVector(p.t1x, p.t1y, s.t0x, s.t0y, s.sfx, s.sfy);
+                tanStart = tanHalfTurn(p.t1x, p.t1y, s.t0x, s.t0y);
+            }
+            else
+            {
+                s.sfx       = s.t0x;
+                s.sfy       = s.t0y;
+                s.openStart = true;
+            }
+
+            if (hasNext)
+            {
+                const Segment& nx = mSegments[(k + 1) % m];
+                forwardVector(s.t1x, s.t1y, nx.t0x, nx.t0y, s.efx, s.efy);
+                tanEnd = tanHalfTurn(s.t1x, s.t1y, nx.t0x, nx.t0y);
+            }
+            else
+            {
+                s.efx     = s.t1x;
+                s.efy     = s.t1y;
+                s.openEnd = true;
+            }
+
+            s.tanStart = tanStart;
+            s.tanEnd   = tanEnd;
+            s.wedge    = 1.0 + std::max(std::fabs(tanStart), std::fabs(tanEnd));
+            mWedge  = std::max(mWedge, s.wedge);
         }
     }
 
-    static bool projectOnLine(const Segment& s, double px, double py, double& dist, double& station, double& tx, double& ty, double& qx, double& qy)
+    // Projection of a point on the supporting line or circle of a segment,
+    // without clamping. Returns false when the point is not in the region of the
+    // segment (the area between the bisector lines of its two end vertices).
+    // along: distance from the start of the segment; lateral: signed offset.
+    static bool projectInRegion(const Segment& s, double px, double py, double& along, double& lateral)
+    {
+        const double rx = px - s.ax;
+        const double ry = py - s.ay;
+        const double ex = px - s.bx;
+        const double ey = py - s.by;
+
+        if (rx * s.sfx + ry * s.sfy < 0.0)
+            return false;
+        const double fe = ex * s.efx + ey * s.efy;
+        if (s.openEnd ? fe > 0.0 : fe >= 0.0)
+            return false;
+
+        if (!s.isArc)
+        {
+            along   = rx * s.t0x + ry * s.t0y;
+            lateral = -s.t0y * rx + s.t0x * ry;    // left normal of the tangent is (-ty, tx)
+            return true;
+        }
+
+        const double ccw  = s.sweep > 0.0 ? 1.0 : -1.0;
+        const double absS = std::fabs(s.sweep);
+        const double dx   = px - s.cx;
+        const double dy   = py - s.cy;
+        const double ang  = std::atan2(dy, dx);
+
+        // Angular travel from the arc start in the arc direction, unclamped but
+        // taken around the middle of the arc so that it stays continuous
+        const double du = absS / 2.0 + wrapToPi(ccw * (ang - s.startAngle) - absS / 2.0);
+
+        // Open ends cut exactly at the end of the arc; elsewhere the bisector
+        // half-plane above applies, the angle only discards the far side
+        if (s.openStart ? du < 0.0 : du < -Pi / 2.0)
+            return false;
+        if (s.openEnd ? du > absS : du > absS + Pi / 2.0)
+            return false;
+
+        along   = s.radius * du;
+        lateral = ccw * (s.radius - std::hypot(dx, dy));    // the center is on the left of a counter-clockwise arc
+        return true;
+    }
+
+    // Nearest segment with the projection clamped inside it (fallback).
+    bool projectNearest(double px, double py, double maxDistance, Result& result) const
+    {
+        double bestDist = maxDistance;
+        bool found      = false;
+
+        for (const auto& s : mSegments)
+        {
+            if (px < s.minX - maxDistance || px > s.maxX + maxDistance || py < s.minY - maxDistance || py > s.maxY + maxDistance)
+                continue;
+
+            double dist, station, tx, ty, qx, qy;
+            if (!(s.isArc ? nearestOnArc(s, px, py, dist, station, tx, ty, qx, qy) : nearestOnLine(s, px, py, dist, station, tx, ty, qx, qy)))
+                continue;
+
+            if (dist > bestDist)
+                continue;
+
+            // Left normal of the tangent is (-ty, tx)
+            const double side = (-ty) * (px - qx) + tx * (py - qy);
+            bestDist          = dist;
+            result.station    = station;
+            result.lateral    = side >= 0.0 ? dist : -dist;
+            found             = true;
+        }
+        return found;
+    }
+
+    static bool nearestOnLine(const Segment& s, double px, double py, double& dist, double& station, double& tx, double& ty, double& qx, double& qy)
     {
         const double dx = s.bx - s.ax;
         const double dy = s.by - s.ay;
@@ -219,7 +418,7 @@ private:
         return true;
     }
 
-    static bool projectOnArc(const Segment& s, double px, double py, double& dist, double& station, double& tx, double& ty, double& qx, double& qy)
+    static bool nearestOnArc(const Segment& s, double px, double py, double& dist, double& station, double& tx, double& ty, double& qx, double& qy)
     {
         const double ccw  = s.sweep > 0.0 ? 1.0 : -1.0;
         const double absS = std::fabs(s.sweep);

@@ -10,6 +10,8 @@ You pick a polyline in the drawing, give a search distance on each side, and cho
 | Y | Original Z (elevation) |
 | Z | Signed lateral offset from the polyline (positive on the left of the drawing direction) |
 
+At a corner of the polyline, the points are assigned to a segment by the bisector of the corner and the station stays continuous across it (no gap, no overlap). The lateral offset is the true perpendicular distance to the segment.
+
 This is handy to get an elevation view or a developed profile of a façade, a tunnel, a road or a wall that follows a curved alignment.
 
 The project has two parts:
@@ -46,13 +48,16 @@ If you would rather build from source, see the **Building** section below.
 ## Usage
 
 1. In AutoCAD, run `NETLOAD` and select `RcpFlatten.dll`.
-2. Run the `RCPFLATTEN` command.
-3. Select the 2D polyline to unfold the point cloud along.
-4. Enter the search distance to the left, then to the right, of the polyline (in drawing units; the default is 5 for each side).
-5. Select the source `.rcp`.
+2. Run the `RCPFLATTEN` command. A palette opens, docked on the right (if a polyline is selected before the command, it is used as the path). It stays open and can be moved or docked elsewhere.
+3. Click **Sélectionner…** and pick the 2D polyline to unfold the point cloud along.
+4. Enter the search distance to the left and to the right of the polyline (in drawing units; the default is 5 for each side). The ruler button next to each field measures the distance in the drawing.
+5. Choose the source `.rcp`. The palette shows its number of points and scans.
 6. Choose the `.rcp` to create (the suggested name is `<source>_flat.rcp`). It must differ from the source.
+7. Click **Aplatir**.
 
-The command line reports the progress and the number of points written.
+A progress bar follows the two steps of the conversion: reading the source points, then indexing the new `.rcp` (the ReCap SDK reports this second step in coarse increments, so the bar can stay on a value for a while on large clouds). **Arrêter** stops the conversion and removes the incomplete output. The palette remembers the distances and the source for the rest of the AutoCAD session.
+
+`-RCPFLATTEN` runs the same command with prompts on the command line only, for scripts and macros. It reports the progress on the command line.
 
 Notes:
 
@@ -78,7 +83,7 @@ v <x> <y> <bulge>
 v <x> <y> <bulge>
 ```
 
-The tool prints `PROGRESS <processed> <total>`, then `RESULT <kept points>` or `ERROR <message>`, on its standard output.
+The tool prints `PROGRESS <processed> <total>` while it reads the source (every million points), then `INDEX <percent>` while the ReCap SDK indexes the output, and finally `RESULT <kept points>` or `ERROR <message>`, on its standard output.
 
 ### Exit codes (`RcpFlattenCli`)
 
@@ -115,10 +120,10 @@ The script builds the native helper, then the plug-in. The result is in `build\p
 ### Package a release
 
 ```powershell
-.\package.ps1 -Version 0.1.0
+.\package.ps1 -Version 0.2.0
 ```
 
-This creates `Dist\rcpflatten-v0.1.0-win-x64.zip` (without the Autodesk DLLs) and prints its SHA256.
+This creates `Dist\rcpflatten-v0.2.0-win-x64.zip` (without the Autodesk DLLs) and prints its SHA256.
 
 ## Licenses
 

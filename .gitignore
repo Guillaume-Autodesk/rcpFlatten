@@ -33,6 +33,9 @@ obj/
 # AutoCAD crash reports (may contain user and machine information)
 /ErrorReports/
 
+# Local sample data (point clouds and drawings, too heavy for the repository)
+/Sample/
+
 # Point cloud data and test files
 *.rcp
 *.rcs

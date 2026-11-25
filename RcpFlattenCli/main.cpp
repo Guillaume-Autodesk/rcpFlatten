@@ -5,12 +5,15 @@
 //   X = station along the polyline, Y = original Z, Z = signed lateral offset.
 //
 // Output protocol (stdout, one line each, flushed):
-//   PROGRESS <processed> <total>
+//   PROGRESS <processed> <total>   step 1: reading the source points (total is an estimate)
+//   INDEX <percent>                step 2: indexing the output RCP (0-100)
 //   RESULT <kept points>
 //   ERROR <message>
 // Exit codes: 0 = success, 2 = no point found in the search zone, 1 = error.
 
 #include <tchar.h>
+#include <algorithm>
+#include <atomic>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -129,6 +132,25 @@ namespace {
         return code == RCCode::OK;
     }
 
+    // Indexing progress. The SDK calls this from one of its own threads, possibly
+    // with the same value many times: only report changes.
+    std::atomic<int> lastIndexProgress{-1};
+
+    void onIndexProgress(const RCIOStatus& status)
+    {
+        const int progress = std::min<int>(status.getTotalProgress(), 100);
+        int previous       = lastIndexProgress.load();
+        while (progress > previous)
+        {
+            if (lastIndexProgress.compare_exchange_weak(previous, progress))
+            {
+                std::printf("INDEX %d\n", progress);
+                std::fflush(stdout);
+                break;
+            }
+        }
+    }
+
 }    // namespace
 
 int wmain(int argc, wchar_t* argv[])
@@ -174,15 +196,25 @@ int wmain(int argc, wchar_t* argv[])
     double minX, minY, maxX, maxY;
     projector.bounds(minX, minY, maxX, maxY);
     const auto projectBox = project->getBoundingBox();
-    const RCVector3d boxMin(minX - maxOffset, minY - maxOffset, projectBox.getMin().z - 1.0);
-    const RCVector3d boxMax(maxX + maxOffset, maxY + maxOffset, projectBox.getMax().z + 1.0);
+    const double reach = projector.reach(maxOffset);    // larger than maxOffset around sharp corners
+    const RCVector3d boxMin(minX - reach, minY - reach, projectBox.getMin().z - 1.0);
+    const RCVector3d boxMax(maxX + reach, maxY + reach, projectBox.getMax().z + 1.0);
     project->addTemporarySpatialFilter(RCSharedPtr<RCSpatialFilter>(new RCBoxSpatialFilter(boxMin, boxMax)));
-
-    const uint64_t totalPoints = project->getNumberOfPoints();
 
     RCPointIteratorSettings settings;
     settings.setDensity(-1.0);
     settings.setIsVisiblePointsOnly(false);
+
+    // Number of points the iterator will visit once the spatial filter is applied
+    // (estimate, used for the progress only); fall back on the whole project.
+    const uint64_t projectPoints = project->getNumberOfPoints();
+    uint64_t totalPoints         = project->getNumberOfPointsEstimate(settings);
+    if (totalPoints == 0 || totalPoints > projectPoints)
+        totalPoints = projectPoints;
+
+    std::printf("PROGRESS 0 %llu\n", totalPoints);
+    std::fflush(stdout);
+
     auto iterator = project->createPointIterator(settings);
 
     // The output project is created lazily on the first kept point, so no file
@@ -200,7 +232,7 @@ int wmain(int argc, wchar_t* argv[])
         ++processed;
         if (processed % 1000000 == 0)
         {
-            std::printf("PROGRESS %llu %llu\n", processed, totalPoints);
+            std::printf("PROGRESS %llu %llu\n", processed, std::max(processed, totalPoints));
             std::fflush(stdout);
         }
 
@@ -234,7 +266,7 @@ int wmain(int argc, wchar_t* argv[])
             metadata.coordinateSystem        = L"";
             metadata.verticalCoordinateSystem = L"";
             metadata.isStructured            = false;
-            metadata.estimatedPointCount     = totalPoints;
+            metadata.estimatedPointCount     = projectPoints;
             RCTransform identity;
             identity.identity();
             identity.toRowMajor(metadata.globalTransformation);
@@ -269,6 +301,9 @@ int wmain(int argc, wchar_t* argv[])
     }
     iterator->close();
 
+    std::printf("PROGRESS %llu %llu\n", processed, processed);
+    std::fflush(stdout);
+
     if (session == nullptr)
     {
         std::printf("RESULT 0\n");
@@ -279,9 +314,16 @@ int wmain(int argc, wchar_t* argv[])
     if (!flush(*session, batch, hasColor, hasIntensity, withClassification))
         return fail("addPointsToScan failed");
 
-    session->processScan();
+    std::printf("INDEX 0\n");
+    std::fflush(stdout);
+    lastIndexProgress = 0;
+
+    session->processScan(&onIndexProgress);
     session->endSession();
     session->waitTillFinished();
+
+    std::printf("INDEX 100\n");
+    std::fflush(stdout);
 
     std::printf("RANGE_IN %f %f %f %f %f %f\n", srcLo[0], srcLo[1], srcLo[2], srcHi[0], srcHi[1], srcHi[2]);
     std::printf("RANGE_OUT %f %f %f %f %f %f\n", lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]);

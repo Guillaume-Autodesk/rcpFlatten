@@ -42,7 +42,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(RECAP_SDK_ROOT)Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>AdskRcData.lib;AdskRcProjectIO.lib;AdskRcCommon.lib;AdskRcFoundation.lib;AdskRcFilter.lib;AdskRcCompressUtils.lib;AdskRcFileSystemUtility.lib;AdskRcStringUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>AdskRcData.lib;AdskRcProjectIO.lib;AdskRcImport.lib;AdskRcCommon.lib;AdskRcFoundation.lib;AdskRcFilter.lib;AdskRcCompressUtils.lib;AdskRcFileSystemUtility.lib;AdskRcStringUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 /ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>

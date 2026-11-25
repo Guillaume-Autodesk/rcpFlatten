@@ -1,10 +1,10 @@
 # Builds the release archive Dist\rcpflatten-v<version>-win-x64.zip from the output of build.ps1.
 # The Autodesk ReCap SDK DLLs are deliberately NOT included (see THIRD_PARTY_NOTICES.md).
 #
-# Usage: .\package.ps1 [-Version 0.1.0]
+# Usage: .\package.ps1 [-Version 0.2.0]
 
 param(
-    [string]$Version = '0.1.0'
+    [string]$Version = '0.2.0'
 )
 
 $ErrorActionPreference = 'Stop'

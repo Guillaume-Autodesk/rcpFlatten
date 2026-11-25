@@ -1,0 +1,431 @@
+<!--
+  Weave 3.0 look (dark theme) for WPF.
+  Values measured on the Weave 3.0 MUI components rendered by WeaveProvider
+  (Button, TextField, Card, LinearProgress, Alert, Typography). Only the
+  values are reproduced here: no Weave code or asset is shipped.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Typography: Artifakt Element (installed with Autodesk products), Segoe UI otherwise -->
+    <FontFamily x:Key="Weave.Font">Artifakt Element, Segoe UI</FontFamily>
+    <FontFamily x:Key="Weave.IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+
+    <!-- Surfaces -->
+    <SolidColorBrush x:Key="Weave.Background" Color="#1F1F1F" />
+    <SolidColorBrush x:Key="Weave.Surface" Color="#262626" />
+    <SolidColorBrush x:Key="Weave.SurfaceBorder" Color="#33FFFFFF" />
+    <SolidColorBrush x:Key="Weave.Divider" Color="#33FFFFFF" />
+
+    <!-- Text -->
+    <SolidColorBrush x:Key="Weave.Text" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Weave.TextSecondary" Color="#B3FFFFFF" />
+    <SolidColorBrush x:Key="Weave.TextOnPrimary" Color="#080808" />
+
+    <!-- Actions -->
+    <SolidColorBrush x:Key="Weave.Primary" Color="#38ABDF" />
+    <SolidColorBrush x:Key="Weave.PrimaryHover" Color="#5CBBE6" />
+    <SolidColorBrush x:Key="Weave.PrimaryPressed" Color="#2B8FC0" />
+    <SolidColorBrush x:Key="Weave.OutlineBorder" Color="#4DFFFFFF" />
+    <SolidColorBrush x:Key="Weave.HoverFill" Color="#1AFFFFFF" />
+    <SolidColorBrush x:Key="Weave.PressedFill" Color="#26FFFFFF" />
+
+    <!-- Inputs -->
+    <SolidColorBrush x:Key="Weave.InputFill" Color="#1AFFFFFF" />
+    <SolidColorBrush x:Key="Weave.InputHoverBorder" Color="#4DFFFFFF" />
+    <SolidColorBrush x:Key="Weave.Error" Color="#F18888" />
+
+    <!-- Progress -->
+    <SolidColorBrush x:Key="Weave.ProgressTrack" Color="#1AFFFFFF" />
+
+    <!-- Alerts (background / border / icon) -->
+    <SolidColorBrush x:Key="Weave.Alert.ErrorFill" Color="#330505" />
+    <SolidColorBrush x:Key="Weave.Alert.ErrorBorder" Color="#4DF18888" />
+    <SolidColorBrush x:Key="Weave.Alert.ErrorIcon" Color="#F18888" />
+    <SolidColorBrush x:Key="Weave.Alert.SuccessFill" Color="#1D2D04" />
+    <SolidColorBrush x:Key="Weave.Alert.SuccessBorder" Color="#4DABCA79" />
+    <SolidColorBrush x:Key="Weave.Alert.SuccessIcon" Color="#ABCA79" />
+    <SolidColorBrush x:Key="Weave.Alert.WarningFill" Color="#331805" />
+    <SolidColorBrush x:Key="Weave.Alert.WarningBorder" Color="#4DFFD153" />
+    <SolidColorBrush x:Key="Weave.Alert.WarningIcon" Color="#FFD153" />
+    <SolidColorBrush x:Key="Weave.Alert.InfoFill" Color="#081B34" />
+    <SolidColorBrush x:Key="Weave.Alert.InfoBorder" Color="#4D38ABDF" />
+    <SolidColorBrush x:Key="Weave.Alert.InfoIcon" Color="#38ABDF" />
+
+    <CornerRadius x:Key="Weave.Radius.Control">6</CornerRadius>
+    <CornerRadius x:Key="Weave.Radius.Card">12</CornerRadius>
+
+    <!-- Typography scale (Weave names) -->
+    <Style x:Key="Weave.Text.XlBold" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="LineHeight" Value="30" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource Weave.Text}" />
+    </Style>
+    <Style x:Key="Weave.Text.LBold" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="LineHeight" Value="26" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource Weave.Text}" />
+    </Style>
+    <Style x:Key="Weave.Text.MBold" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="LineHeight" Value="20" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource Weave.Text}" />
+    </Style>
+    <Style x:Key="Weave.Text.Body1" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="LineHeight" Value="20" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{StaticResource Weave.Text}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style x:Key="Weave.Text.Body2" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="LineHeight" Value="18" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{StaticResource Weave.TextSecondary}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style x:Key="Weave.Text.Label" TargetType="TextBlock" BasedOn="{StaticResource Weave.Text.Body1}">
+        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+    <Style x:Key="Weave.Text.Helper" TargetType="TextBlock" BasedOn="{StaticResource Weave.Text.Body2}">
+        <Setter Property="Margin" Value="0,4,0,0" />
+        <Style.Triggers>
+            <Trigger Property="Tag" Value="error">
+                <Setter Property="Foreground" Value="{StaticResource Weave.Error}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Card (Weave Tile, default style) -->
+    <Style x:Key="Weave.Card" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource Weave.Surface}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Weave.SurfaceBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource Weave.Radius.Card}" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <Style x:Key="Weave.FocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Margin="-3" CornerRadius="8" BorderThickness="2" BorderBrush="{StaticResource Weave.Primary}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Buttons: contained (primary), outlined, text. Height 32, radius 6, bold 14 -->
+    <Style x:Key="Weave.Button.Base" TargetType="Button">
+        <Setter Property="FontFamily" Value="{StaticResource Weave.Font}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="MinWidth" Value="64" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource Weave.Text}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Weave.FocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{StaticResource Weave.Radius.Control}"
+                            Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Root" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="Weave.Button.Contained" TargetType="Button" BasedOn="{StaticResource Weave.Button.Base}">
+        <Setter Property="Background" Value="{StaticResource Weave.Primary}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Weave.Primary}" />
+        <Setter Property="Foreground" Value="{StaticResource Weave.TextOnPrimary}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource Weave.PrimaryHover}" />
+                <Setter Property="BorderBrush" Value="{StaticResource Weave.PrimaryHover}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{StaticResource Weave.PrimaryPressed}" />
+                <Setter Property="BorderBrush" Value="{StaticResource Weave.PrimaryPressed}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="Weave.Button.Outlined" TargetType="Button" BasedOn="{StaticResource Weave.Button.Base}">
+        <Setter Property="BorderBrush" Value="{StaticResource Weave.OutlineBorder}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource Weave.HoverFill}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{StaticResource Weave.PressedFill}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="Weave.Button.Text" TargetType="Button" BasedOn="{StaticResource Weave.Button.Base}">
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource Weave.HoverFill}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{StaticResource Weave.PressedFill}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Square outlined icon button, 32 x 32 -->
+    <Style x:Key="Weave.IconButton" TargetType="Button" BasedOn="{StaticResource Weave.Button.Outlined}">
+        <Setter Property="Width" Value="32" />
+        <Setter Property="MinWidth" Value="32" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FontFamily" Value="{StaticResource Weave.IconFont}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="16" />
+    </Style>
+
+    <!-- Text field: filled, height 32, radius 6, semibold 14. Tag="error" for the error state -->
+    <Style x:Key="Weave.TextBox" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource Weave.Font}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource Weave.Text}" />
+        <Setter Property="CaretBrush" Value="{StaticResource Weave.Text}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource Weave.Primary}" />
+        <Setter Property="Background" Value="{StaticResource Weave.InputFill}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Padding" Value="8,0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{StaticResource Weave.Radius.Control}"
+                            SnapsToDevicePixels="True">
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="Center"
+                                      Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="BorderBrush" Value="{StaticResource Weave.InputHoverBorder}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter Property="BorderBrush" Value="{StaticResource Weave.Primary}" />
+                        </Trigger>
+                        <Trigger Property="Tag" Value="error">
+                            <Setter Property="BorderBrush" Value="{StaticResource Weave.Error}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Root" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--
+      Linear progress: 4 px pill, primary bar on a translucent track.
+      Tag="busy" adds a moving highlight, used when the SDK reports progress in coarse steps.
+    -->
+    <Style x:Key="Weave.ProgressBar" TargetType="ProgressBar">
+        <Setter Property="Height" Value="4" />
+        <Setter Property="Minimum" Value="0" />
+        <Setter Property="Maximum" Value="1" />
+        <Setter Property="Foreground" Value="{StaticResource Weave.Primary}" />
+        <Setter Property="Background" Value="{StaticResource Weave.ProgressTrack}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Grid x:Name="TemplateRoot" ClipToBounds="True">
+                        <Grid.OpacityMask>
+                            <VisualBrush Stretch="None" AlignmentX="Left" AlignmentY="Top">
+                                <VisualBrush.Visual>
+                                    <Border CornerRadius="2" Background="Black"
+                                            Width="{Binding ActualWidth, ElementName=TemplateRoot}"
+                                            Height="{Binding ActualHeight, ElementName=TemplateRoot}" />
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </Grid.OpacityMask>
+                        <Border x:Name="PART_Track" Background="{TemplateBinding Background}" />
+                        <Border x:Name="PART_Indicator" Background="{TemplateBinding Foreground}" HorizontalAlignment="Left" />
+                        <Border x:Name="Highlight" Width="120" HorizontalAlignment="Left" Visibility="Collapsed">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#00FFFFFF" Offset="0" />
+                                    <GradientStop Color="#66FFFFFF" Offset="0.5" />
+                                    <GradientStop Color="#00FFFFFF" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.RenderTransform>
+                                <TranslateTransform x:Name="HighlightOffset" X="-120" />
+                            </Border.RenderTransform>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Tag" Value="busy">
+                            <Setter TargetName="Highlight" Property="Visibility" Value="Visible" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="Sweep">
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetName="HighlightOffset" Storyboard.TargetProperty="X"
+                                                         From="-120" To="600" Duration="0:0:1.6" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="Sweep" />
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--
+      Outlined field made of segments: [ text | unit | - | + ] or [ text | Browse ].
+      Tag="error" for the error state. The border follows the keyboard focus of its content.
+    -->
+    <Style x:Key="Weave.Field" TargetType="Border">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{StaticResource Weave.OutlineBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource Weave.Radius.Control}" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Style.Triggers>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter Property="BorderBrush" Value="{StaticResource Weave.Primary}" />
+            </Trigger>
+            <Trigger Property="Tag" Value="error">
+                <Setter Property="BorderBrush" Value="{StaticResource Weave.Error}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Text box without its own chrome, to sit inside Weave.Field -->
+    <Style x:Key="Weave.TextBox.Bare" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource Weave.Font}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource Weave.Text}" />
+        <Setter Property="CaretBrush" Value="{StaticResource Weave.Text}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource Weave.Primary}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="8,0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="Center"
+                                  Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="PART_ContentHost" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Button segment inside Weave.Field: flat, inset hover fill -->
+    <Style x:Key="Weave.Button.Segment" TargetType="Button">
+        <Setter Property="FontFamily" Value="{StaticResource Weave.Font}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="MinWidth" Value="30" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource Weave.Text}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Root" Margin="2" Background="{TemplateBinding Background}" CornerRadius="4"
+                            Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{StaticResource Weave.HoverFill}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{StaticResource Weave.PressedFill}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{StaticResource Weave.HoverFill}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Root" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Small borderless icon button (24 x 24) -->
+    <Style x:Key="Weave.IconButton.Small" TargetType="Button" BasedOn="{StaticResource Weave.Button.Segment}">
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="MinWidth" Value="24" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FontFamily" Value="{StaticResource Weave.IconFont}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <!-- Vertical separator between two field segments -->
+    <Style x:Key="Weave.SegmentDivider" TargetType="Border">
+        <Setter Property="Width" Value="1" />
+        <Setter Property="Background" Value="{StaticResource Weave.Divider}" />
+    </Style>
+
+    <!-- Horizontal separator between two sections -->
+    <Style x:Key="Weave.SectionDivider" TargetType="Border">
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Background" Value="{StaticResource Weave.Divider}" />
+    </Style>
+
+    <!-- Numbered badge of a section title -->
+    <Style x:Key="Weave.StepBadge" TargetType="Border">
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{StaticResource Weave.OutlineBorder}" />
+        <Setter Property="Background" Value="{StaticResource Weave.HoverFill}" />
+    </Style>
+
+    <!-- Alert: 8 x 12 padding, radius 6, translucent border -->
+    <Style x:Key="Weave.Alert" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{StaticResource Weave.Radius.Control}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="12,8" />
+    </Style>
+
+</ResourceDictionary>

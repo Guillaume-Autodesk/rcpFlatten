@@ -4,6 +4,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
     <AssemblyName>RcpFlatten</AssemblyName>
     <RootNamespace>RcpFlatten</RootNamespace>
     <Platforms>x64</Platforms>
@@ -24,6 +25,16 @@
       <HintPath>$(AutoCadDir)acdbmgd.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <!-- Application.ShowModalWindow (WPF dialog hosted by AutoCAD) -->
+    <Reference Include="acmgd">
+      <HintPath>$(AutoCadDir)acmgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- UseWPF removes System.IO from the implicit usings -->
+  <ItemGroup>
+    <Using Include="System.IO" />
   </ItemGroup>
 
   <!-- The native helper (ReCap SDK) runs out of process, next to the plug-in -->
@@ -36,4 +47,3 @@
   </Target>
 
 </Project>
-

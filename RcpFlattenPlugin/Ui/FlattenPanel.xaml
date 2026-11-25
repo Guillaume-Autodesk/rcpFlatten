@@ -1,0 +1,230 @@
+<UserControl x:Class="RcpFlatten.Ui.FlattenPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Weave.Surface}" Foreground="{DynamicResource Weave.Text}"
+             FontFamily="{DynamicResource Weave.Font}" FontSize="14"
+             UseLayoutRounding="True" SnapsToDevicePixels="True"
+             TextOptions.TextFormattingMode="Display"
+             MinWidth="320">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/RcpFlatten;component/Ui/WeaveTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <DockPanel>
+
+        <!-- Header -->
+        <Grid DockPanel.Dock="Top" Margin="20,20,12,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Style="{StaticResource Weave.Text.XlBold}" FontSize="20" LineHeight="26" TextWrapping="Wrap"
+                           Text="Aplatir un nuage de points" />
+                <TextBlock Style="{StaticResource Weave.Text.Body2}" Margin="0,4,0,0"
+                           Text="Déplie un nuage ReCap le long d'une polyligne 2D." />
+            </StackPanel>
+            <Button Grid.Column="1" VerticalAlignment="Top" Margin="8,0,0,0" Style="{StaticResource Weave.IconButton.Small}"
+                    Content="&#xE711;" ToolTip="Fermer le panneau" Click="OnClose" />
+        </Grid>
+        <Border DockPanel.Dock="Top" Style="{StaticResource Weave.SectionDivider}" />
+
+        <!-- Footer: progress, result and actions -->
+        <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="{StaticResource Weave.Divider}" Padding="20,16,20,20">
+            <StackPanel>
+
+                <!-- Result -->
+                <Border x:Name="AlertPanel" Style="{StaticResource Weave.Alert}" Margin="0,0,0,16" Visibility="Collapsed">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="AlertIcon" FontFamily="{StaticResource Weave.IconFont}" FontSize="16" Margin="0,2,12,0" VerticalAlignment="Top" />
+                        <StackPanel Grid.Column="1">
+                            <TextBlock x:Name="AlertText" Style="{StaticResource Weave.Text.Body1}" />
+                            <Button x:Name="OpenFolderButton" Margin="0,8,0,0" HorizontalAlignment="Left"
+                                    Style="{StaticResource Weave.Button.Text}" Content="Ouvrir le dossier" Click="OnOpenFolder" Visibility="Collapsed" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Progress -->
+                <StackPanel x:Name="ProgressPanel" Margin="0,0,0,16" Visibility="Collapsed">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="StageText" Style="{StaticResource Weave.Text.Body1}" Text="Étape 1 sur 2 : lecture des points" />
+                        <TextBlock x:Name="PercentText" Grid.Column="1" Margin="12,0,0,0" Style="{StaticResource Weave.Text.MBold}" Text="0 %" />
+                    </Grid>
+                    <ProgressBar x:Name="Progress" Style="{StaticResource Weave.ProgressBar}" Margin="0,8,0,0" />
+                    <TextBlock x:Name="ElapsedText" Style="{StaticResource Weave.Text.Helper}" Margin="0,8,0,0" Text="Temps écoulé : 0:00" />
+                </StackPanel>
+
+                <!-- Actions -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="RunButton" Style="{StaticResource Weave.Button.Contained}" Click="OnRun" ToolTip="Lancer l'aplatissement">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="{StaticResource Weave.IconFont}" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0" Text="&#xE768;" />
+                            <TextBlock VerticalAlignment="Center" Text="Aplatir" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="StopButton" Grid.Column="1" Margin="8,0,0,0" Style="{StaticResource Weave.Button.Outlined}"
+                            Content="Arrêter" Click="OnStop" Visibility="Collapsed" />
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Inputs -->
+        <ScrollViewer x:Name="InputsPanel" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="20,20,20,20">
+
+                <!-- 1. Path -->
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource Weave.StepBadge}">
+                        <TextBlock Style="{StaticResource Weave.Text.MBold}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="1" />
+                    </Border>
+                    <TextBlock Style="{StaticResource Weave.Text.LBold}" Margin="12,0,0,0" VerticalAlignment="Center" Text="Polyligne de référence" />
+                </StackPanel>
+
+                <Button x:Name="PickPolylineButton" Margin="0,16,0,0" Height="40" Style="{StaticResource Weave.Button.Outlined}"
+                        Click="OnPickPolyline" ToolTip="Sélectionner la polyligne dans le dessin">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontFamily="{StaticResource Weave.IconFont}" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0" Text="&#xE70F;" />
+                        <TextBlock VerticalAlignment="Center" Text="Sélectionner…" />
+                    </StackPanel>
+                </Button>
+                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                    <Ellipse x:Name="PolylineDot" Width="10" Height="10" Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <TextBlock x:Name="PolylineSummary" Style="{StaticResource Weave.Text.Body1}" VerticalAlignment="Center" Text="Aucune polyligne sélectionnée" />
+                </StackPanel>
+                <TextBlock x:Name="PolylineHelper" Style="{StaticResource Weave.Text.Helper}" Margin="0,4,0,0"
+                           Text="Polyligne 2D dans le plan XY du SCG. Segments et arcs acceptés." />
+
+                <Border Style="{StaticResource Weave.SectionDivider}" Margin="0,20,0,20" />
+
+                <!-- 2. Search zone -->
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource Weave.StepBadge}">
+                        <TextBlock Style="{StaticResource Weave.Text.MBold}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="2" />
+                    </Border>
+                    <TextBlock Style="{StaticResource Weave.Text.LBold}" Margin="12,0,0,0" VerticalAlignment="Center" Text="Zone de recherche" />
+                </StackPanel>
+
+                <Grid Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <Grid Margin="0,0,0,4">
+                            <TextBlock Style="{StaticResource Weave.Text.Body1}" VerticalAlignment="Center" Text="À gauche" />
+                            <Button HorizontalAlignment="Right" Style="{StaticResource Weave.IconButton.Small}" Content="&#xED5E;"
+                                    Click="OnPickLeft" ToolTip="Mesurer la distance dans le dessin" />
+                        </Grid>
+                        <Border x:Name="LeftField" Style="{StaticResource Weave.Field}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="LeftBox" Style="{StaticResource Weave.TextBox.Bare}" TextChanged="OnFieldChanged" />
+                                <TextBlock x:Name="LeftUnit" Grid.Column="1" Style="{StaticResource Weave.Text.Body2}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <Border Grid.Column="2" Style="{StaticResource Weave.SegmentDivider}" />
+                                <Button Grid.Column="3" Style="{StaticResource Weave.Button.Segment}" Content="&#x2212;" Tag="Left,-1" Click="OnStep" ToolTip="Diminuer" />
+                                <Border Grid.Column="4" Style="{StaticResource Weave.SegmentDivider}" />
+                                <Button Grid.Column="5" Style="{StaticResource Weave.Button.Segment}" Content="+" Tag="Left,1" Click="OnStep" ToolTip="Augmenter" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <Grid Margin="0,0,0,4">
+                            <TextBlock Style="{StaticResource Weave.Text.Body1}" VerticalAlignment="Center" Text="À droite" />
+                            <Button HorizontalAlignment="Right" Style="{StaticResource Weave.IconButton.Small}" Content="&#xED5E;"
+                                    Click="OnPickRight" ToolTip="Mesurer la distance dans le dessin" />
+                        </Grid>
+                        <Border x:Name="RightField" Style="{StaticResource Weave.Field}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="RightBox" Style="{StaticResource Weave.TextBox.Bare}" TextChanged="OnFieldChanged" />
+                                <TextBlock x:Name="RightUnit" Grid.Column="1" Style="{StaticResource Weave.Text.Body2}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <Border Grid.Column="2" Style="{StaticResource Weave.SegmentDivider}" />
+                                <Button Grid.Column="3" Style="{StaticResource Weave.Button.Segment}" Content="&#x2212;" Tag="Right,-1" Click="OnStep" ToolTip="Diminuer" />
+                                <Border Grid.Column="4" Style="{StaticResource Weave.SegmentDivider}" />
+                                <Button Grid.Column="5" Style="{StaticResource Weave.Button.Segment}" Content="+" Tag="Right,1" Click="OnStep" ToolTip="Augmenter" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+                <TextBlock x:Name="DistanceHelper" Style="{StaticResource Weave.Text.Helper}" Margin="0,8,0,0"
+                           Text="Distance de part et d'autre de la polyligne, dans le sens de dessin, en unités du dessin." />
+
+                <Border Style="{StaticResource Weave.SectionDivider}" Margin="0,20,0,20" />
+
+                <!-- 3. Files -->
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource Weave.StepBadge}">
+                        <TextBlock Style="{StaticResource Weave.Text.MBold}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="3" />
+                    </Border>
+                    <TextBlock Style="{StaticResource Weave.Text.LBold}" Margin="12,0,0,0" VerticalAlignment="Center" Text="Nuages de points" />
+                </StackPanel>
+
+                <TextBlock Style="{StaticResource Weave.Text.Label}" Margin="0,16,0,4" Text="RCP d'origine" />
+                <Border x:Name="InputField" Style="{StaticResource Weave.Field}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="InputBox" Style="{StaticResource Weave.TextBox.Bare}" TextChanged="OnInputChanged" />
+                        <Border Grid.Column="1" Style="{StaticResource Weave.SegmentDivider}" />
+                        <Button Grid.Column="2" Style="{StaticResource Weave.Button.Segment}" Content="Parcourir…" Click="OnBrowseInput" />
+                    </Grid>
+                </Border>
+                <TextBlock x:Name="InputHelper" Style="{StaticResource Weave.Text.Helper}"
+                           Text="Tous les points sont lus, à densité maximale, sans les modifications utilisateur (régions, découpes)." />
+
+                <TextBlock Style="{StaticResource Weave.Text.Label}" Margin="0,16,0,4" Text="RCP à créer" />
+                <Border x:Name="OutputField" Style="{StaticResource Weave.Field}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="OutputBox" Style="{StaticResource Weave.TextBox.Bare}" TextChanged="OnOutputChanged" />
+                        <Border Grid.Column="1" Style="{StaticResource Weave.SegmentDivider}" />
+                        <Button Grid.Column="2" Style="{StaticResource Weave.Button.Segment}" Content="Parcourir…" Click="OnBrowseOutput" />
+                    </Grid>
+                </Border>
+                <TextBlock x:Name="OutputHelper" Style="{StaticResource Weave.Text.Helper}" Visibility="Collapsed" />
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>
